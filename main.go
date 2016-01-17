@@ -70,6 +70,7 @@ func main() {
 
 			if isCombo(c, btn) {
 				exec.Command("sudo", "shutdown -h 1")
+				c.mu.Unlock()
 				stop <- true
 				os.Exit(0)
 			}
