@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"sync"
@@ -69,7 +70,10 @@ func main() {
 			defer c.mu.Unlock()
 
 			if isCombo(c, btn) {
-				exec.Command("sudo", "shutdown -h 1")
+				err := exec.Command("sudo", "shutdown", "-h", "1").Run()
+				if err != nil {
+					fmt.Fprintln(os.Stderr, err)
+				}
 				c.mu.Unlock()
 				stop <- true
 				os.Exit(0)
