@@ -4,4 +4,7 @@ clean:
 build:
 	GOOS=linux GOARCH=arm go build
 
-.PHONY: clean build
+test:
+	go test -v
+
+.PHONY: clean build test
