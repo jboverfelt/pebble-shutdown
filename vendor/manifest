@@ -1,0 +1,18 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "github.com/hybridgroup/gobot",
+			"repository": "https://github.com/hybridgroup/gobot",
+			"revision": "ef61647a3a325a1b438dc79a2b3c512c5867c0b5",
+			"branch": "dev"
+		},
+		{
+			"importpath": "github.com/hybridgroup/gobot/platforms/pebble",
+			"repository": "https://github.com/hybridgroup/gobot",
+			"revision": "ef61647a3a325a1b438dc79a2b3c512c5867c0b5",
+			"branch": "dev",
+			"path": "/platforms/pebble"
+		}
+	]
+}
