@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"os/exec"
 	"sync"
 	"time"
@@ -21,7 +22,7 @@ type curCmds struct {
 	cmds []string
 }
 
-func clearCmds(c *curCmds, stop chan bool) {
+func clearCmds(c *curCmds, stop <-chan bool) {
 	for {
 		select {
 		case <-time.After(5 * time.Second):
@@ -70,6 +71,7 @@ func main() {
 			if isCombo(c, btn) {
 				exec.Command("sudo", "shutdown -h 1")
 				stop <- true
+				os.Exit(0)
 			}
 		})
 	}
