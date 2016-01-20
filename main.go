@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"sync"
@@ -13,9 +14,10 @@ import (
 )
 
 const (
-	UP     = "up"
-	DOWN   = "down"
-	SELECT = "select"
+	UP               = "up"
+	DOWN             = "down"
+	SELECT           = "select"
+	SHUTDOWN_MESSAGE = "Shutdown command received"
 )
 
 type curCmds struct {
@@ -70,13 +72,15 @@ func main() {
 			defer c.mu.Unlock()
 
 			if isCombo(c, btn) {
+				msg := pebbleDriver.SendNotification(SHUTDOWN_MESSAGE)
+				log.Printf("Received combo: %s", msg)
+
+				stop <- true
+
 				err := exec.Command("sudo", "shutdown", "-h", "1").Run()
 				if err != nil {
 					fmt.Fprintln(os.Stderr, err)
 				}
-				c.mu.Unlock()
-				stop <- true
-				os.Exit(0)
 			}
 		})
 	}
