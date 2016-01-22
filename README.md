@@ -1,6 +1,12 @@
 # pebble-shutdown
 
-Listens for a predefined sequence of pebble commands and shuts down
-the machine when those commands are received
+Listens for a predefined sequence of pebble commands and
+sends a message on a predefined MQTT topic.
 
-This must be run by a user that has privileges to run the shutdown command.
+The host and the port of the MQTT broker can be specified like so:
+
+```
+./pebble-shutdown -host 0.0.0.0:1883
+```
+
+The sample above shows the default address if none is specified

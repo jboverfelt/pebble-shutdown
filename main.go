@@ -1,23 +1,22 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
-	"os"
-	"os/exec"
 	"sync"
 	"time"
 
 	"github.com/hybridgroup/gobot"
 	"github.com/hybridgroup/gobot/api"
+	"github.com/hybridgroup/gobot/platforms/mqtt"
 	"github.com/hybridgroup/gobot/platforms/pebble"
 )
 
 const (
-	UP               = "up"
-	DOWN             = "down"
-	SELECT           = "select"
-	SHUTDOWN_MESSAGE = "Shutdown command received"
+	UP     = "up"
+	DOWN   = "down"
+	SELECT = "select"
 )
 
 type curCmds struct {
@@ -25,16 +24,12 @@ type curCmds struct {
 	cmds []string
 }
 
-func clearCmds(c *curCmds, stop <-chan bool) {
+func clearCmds(c *curCmds) {
 	for {
-		select {
-		case <-time.After(5 * time.Second):
-			c.mu.Lock()
-			c.cmds = make([]string, 5)
-			c.mu.Unlock()
-		case <-stop:
-			return
-		}
+		<-time.After(5 * time.Second)
+		c.mu.Lock()
+		c.cmds = make([]string, 5)
+		c.mu.Unlock()
 	}
 }
 
@@ -53,45 +48,58 @@ func isCombo(c *curCmds, btn string) bool {
 	return false
 }
 
-func main() {
-	gbot := gobot.NewGobot()
-	api.NewAPI(gbot).Start()
-
-	pebbleAdaptor := pebble.NewPebbleAdaptor("pebble")
-	pebbleDriver := pebble.NewPebbleDriver(pebbleAdaptor, "pebble")
-
-	stop := make(chan bool)
-	c := &curCmds{mu: &sync.Mutex{}, cmds: make([]string, 5)}
-
-	go clearCmds(c, stop)
-
-	work := func() {
+func pebbleWork(pebbleDriver *pebble.PebbleDriver, mqttAdaptor *mqtt.MqttAdaptor, c *curCmds) func() {
+	return func() {
 		gobot.On(pebbleDriver.Event("button"), func(data interface{}) {
 			btn := data.(string)
 			c.mu.Lock()
 			defer c.mu.Unlock()
 
 			if isCombo(c, btn) {
-				msg := pebbleDriver.SendNotification(SHUTDOWN_MESSAGE)
-				log.Printf("Received combo: %s", msg)
-
-				stop <- true
-
-				err := exec.Command("sudo", "shutdown", "-h", "1").Run()
-				if err != nil {
-					fmt.Fprintln(os.Stderr, err)
+				ok := mqttAdaptor.Publish("chip/command/shutdown", []byte("shutdown"))
+				if !ok {
+					panic("Error publishing message")
 				}
+
+				log.Printf("Received combo, enqueued shutdown message")
 			}
 		})
 	}
+}
 
-	robot := gobot.NewRobot("pebble",
+func main() {
+	host := flag.String("host", "0.0.0.0:1883", "Hostname and port of the MQTT Broker")
+	flag.Parse()
+
+	gbot := gobot.NewGobot()
+	api.NewAPI(gbot).Start()
+
+	pebbleAdaptor := pebble.NewPebbleAdaptor("pebble")
+	pebbleDriver := pebble.NewPebbleDriver(pebbleAdaptor, "pebble")
+	mqttAdaptor := mqtt.NewMqttAdaptor("server", fmt.Sprintf("tcp://%s", *host), "shutdowner")
+
+	c := &curCmds{mu: &sync.Mutex{}, cmds: make([]string, 5)}
+
+	go clearCmds(c)
+
+	pebbleRobot := gobot.NewRobot("pebble",
 		[]gobot.Connection{pebbleAdaptor},
 		[]gobot.Device{pebbleDriver},
-		work,
+		pebbleWork(pebbleDriver, mqttAdaptor, c),
 	)
 
-	gbot.AddRobot(robot)
+	mqttRobot := gobot.NewRobot("mqtt",
+		[]gobot.Connection{mqttAdaptor},
+	)
 
-	gbot.Start()
+	gbot.AddRobot(mqttRobot)
+	gbot.AddRobot(pebbleRobot)
+
+	errs := gbot.Start()
+
+	for _, err := range errs {
+		if err != nil {
+			panic(err)
+		}
+	}
 }

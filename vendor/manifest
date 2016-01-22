@@ -2,10 +2,23 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git",
+			"repository": "https://git.eclipse.org/gitroot/paho/org.eclipse.paho.mqtt.golang.git",
+			"revision": "dbd8d5c40a582eb9adacde36b47932b3a3ad0034",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/hybridgroup/gobot",
 			"repository": "https://github.com/hybridgroup/gobot",
 			"revision": "ef61647a3a325a1b438dc79a2b3c512c5867c0b5",
 			"branch": "dev"
+		},
+		{
+			"importpath": "github.com/hybridgroup/gobot/platforms/mqtt",
+			"repository": "https://github.com/hybridgroup/gobot",
+			"revision": "ef61647a3a325a1b438dc79a2b3c512c5867c0b5",
+			"branch": "dev",
+			"path": "/platforms/mqtt"
 		},
 		{
 			"importpath": "github.com/hybridgroup/gobot/platforms/pebble",
@@ -13,6 +26,19 @@
 			"revision": "ef61647a3a325a1b438dc79a2b3c512c5867c0b5",
 			"branch": "dev",
 			"path": "/platforms/pebble"
+		},
+		{
+			"importpath": "github.com/pborman/uuid",
+			"repository": "https://github.com/pborman/uuid",
+			"revision": "dee7705ef7b324f27ceb85a121c61f2c2e8ce988",
+			"branch": "master"
+		},
+		{
+			"importpath": "golang.org/x/net/websocket",
+			"repository": "https://go.googlesource.com/net",
+			"revision": "2e9cee70ee697e0a2ef894b560dda50dec7dff58",
+			"branch": "master",
+			"path": "/websocket"
 		}
 	]
 }
