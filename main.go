@@ -61,7 +61,10 @@ func pebbleWork(pebbleDriver *pebble.PebbleDriver, mqttAdaptor *mqtt.MqttAdaptor
 					panic("Error publishing message")
 				}
 
-				log.Printf("Received combo, enqueued shutdown message")
+				const msg = "Received combo, enqueued shutdown message"
+
+				log.Printf(msg)
+				pebbleDriver.SendNotification(msg)
 			}
 		})
 	}
